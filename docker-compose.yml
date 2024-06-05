@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: "advertisement"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - cache
+    restart: on-failure
+
+  db:
+    image: mysql:8.0.36
+    container_name: advertisement
+    ports:
+      - "3306:3306/tcp"
+    environment:
+      MYSQL_DATABASE: advertisement
+      MYSQL_USER: root
+      MYSQL_PASSWORD: pass123
+      MYSQL_ROOT_PASSWORD: pass123
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  cache:
+    image: redis:alpine
+    container_name: cacheTest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  grafana:
+    image: grafana/grafana:9.3.0
+    container_name: grafana
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./services/ad/grafana/datasources.yml.yml:/etc/grafana/provisioning/datasources.yml/datasources.yml.yml
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: cache_exporter
+    ports:
+      - '9121:9121'
+    restart: unless-stopped
+    environment:
+      REDIS_ADDR: "cacheTest:6379"
+      REDIS_USER: null
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+
+volumes:
+  mysql-data:
+  redis-data:
+  grafana:

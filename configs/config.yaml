@@ -1,0 +1,17 @@
+service:
+  name: "Advertisement"
+  tracing: true
+
+port: 8080
+
+mysql:
+  host: localhost
+  port: 3306
+  username: root
+  password: pass123
+  database: advertisement
+
+redis:
+  address: localhost:6379
+  password:
+  db: 0
