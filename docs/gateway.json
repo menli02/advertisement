@@ -1,0 +1,291 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Advertisement API",
+    "description": "REST gateway for the Advertisement microservices platform",
+    "version": "1.0.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/v1",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter: Bearer {access_token}"
+    }
+  },
+  "paths": {
+    "/auth/send-otp": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Send OTP to phone number",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/SendOTPRequest" }
+        }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/SendOTPResponse" } },
+          "400": { "description": "Invalid argument", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Verify OTP code",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/VerifyOTPRequest" }
+        }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/VerifyOTPResponse" } },
+          "401": { "description": "Invalid or expired OTP", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/auth/sign-in": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Sign in with temp token (upserts user)",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/SignInRequest" }
+        }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/SignInResponse" } },
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/auth/renew-token": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Renew access token using refresh token",
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/RenewTokenRequest" }
+        }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/RenewTokenResponse" } },
+          "401": { "description": "Invalid refresh token", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/ads": {
+      "get": {
+        "tags": ["Advertisements"],
+        "summary": "List advertisements",
+        "parameters": [
+          { "in": "query", "name": "category_id", "type": "integer" },
+          { "in": "query", "name": "user_id", "type": "integer" },
+          { "in": "query", "name": "query", "type": "string" },
+          { "in": "query", "name": "sort_by", "type": "string", "enum": ["created_at","price","view_count","title"] },
+          { "in": "query", "name": "sort_order", "type": "string", "enum": ["ASC","DESC"] },
+          { "in": "query", "name": "page", "type": "integer" },
+          { "in": "query", "name": "page_size", "type": "integer" }
+        ],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/ListAdsResponse" } }
+        }
+      },
+      "post": {
+        "tags": ["Advertisements"],
+        "summary": "Create advertisement",
+        "security": [{ "Bearer": [] }],
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/CreateAdRequest" }
+        }],
+        "responses": {
+          "200": { "description": "Created", "schema": { "$ref": "#/definitions/AdResponse" } },
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/Error" } },
+          "404": { "description": "Category not found", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/ads/{id}": {
+      "get": {
+        "tags": ["Advertisements"],
+        "summary": "Get advertisement by ID",
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "integer" }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/AdResponse" } },
+          "404": { "description": "Not found", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      },
+      "put": {
+        "tags": ["Advertisements"],
+        "summary": "Update advertisement",
+        "security": [{ "Bearer": [] }],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "type": "integer" },
+          { "in": "body", "name": "body", "required": true, "schema": { "$ref": "#/definitions/UpdateAdRequest" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/AdResponse" } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/Error" } },
+          "404": { "description": "Not found", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      },
+      "delete": {
+        "tags": ["Advertisements"],
+        "summary": "Soft delete advertisement",
+        "security": [{ "Bearer": [] }],
+        "parameters": [{ "in": "path", "name": "id", "required": true, "type": "integer" }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "type": "object", "properties": { "success": { "type": "boolean" } } } },
+          "403": { "description": "Forbidden", "schema": { "$ref": "#/definitions/Error" } },
+          "404": { "description": "Not found", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "List all categories",
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/ListCategoriesResponse" } }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Create category",
+        "security": [{ "Bearer": [] }],
+        "parameters": [{
+          "in": "body", "name": "body", "required": true,
+          "schema": { "$ref": "#/definitions/CreateCategoryRequest" }
+        }],
+        "responses": {
+          "200": { "description": "OK", "schema": { "$ref": "#/definitions/CategoryResponse" } },
+          "401": { "description": "Unauthorized", "schema": { "$ref": "#/definitions/Error" } }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": { "code": { "type": "string" } }
+    },
+    "SendOTPRequest": {
+      "type": "object", "required": ["phone"],
+      "properties": { "phone": { "type": "string", "example": "+15555555555" } }
+    },
+    "SendOTPResponse": {
+      "type": "object",
+      "properties": {
+        "otp_id":  { "type": "string" },
+        "exp_sec": { "type": "integer" }
+      }
+    },
+    "VerifyOTPRequest": {
+      "type": "object", "required": ["otp_id","code","phone"],
+      "properties": {
+        "otp_id": { "type": "string" },
+        "code":   { "type": "integer" },
+        "phone":  { "type": "string" }
+      }
+    },
+    "VerifyOTPResponse": {
+      "type": "object",
+      "properties": { "temp_token": { "type": "string" } }
+    },
+    "SignInRequest": {
+      "type": "object", "required": ["temp_token"],
+      "properties": {
+        "temp_token":  { "type": "string" },
+        "first_name":  { "type": "string" },
+        "last_name":   { "type": "string" }
+      }
+    },
+    "SignInResponse": {
+      "type": "object",
+      "properties": {
+        "access_token":  { "type": "string" },
+        "refresh_token": { "type": "string" },
+        "user_id":       { "type": "integer" }
+      }
+    },
+    "RenewTokenRequest": {
+      "type": "object", "required": ["refresh_token"],
+      "properties": { "refresh_token": { "type": "string" } }
+    },
+    "RenewTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token":  { "type": "string" },
+        "refresh_token": { "type": "string" }
+      }
+    },
+    "AdResponse": {
+      "type": "object",
+      "properties": {
+        "id":          { "type": "integer" },
+        "user_id":     { "type": "integer" },
+        "category_id": { "type": "integer" },
+        "title":       { "type": "string" },
+        "description": { "type": "string" },
+        "slug":        { "type": "string" },
+        "price":       { "type": "number" },
+        "currency":    { "type": "string" },
+        "status":      { "type": "string", "enum": ["active","inactive","sold","expired"] },
+        "view_count":  { "type": "integer" },
+        "images":      { "type": "array", "items": { "type": "string" } },
+        "created_at":  { "type": "string" },
+        "updated_at":  { "type": "string" }
+      }
+    },
+    "CreateAdRequest": {
+      "type": "object", "required": ["category_id","title"],
+      "properties": {
+        "category_id":  { "type": "integer" },
+        "title":        { "type": "string" },
+        "description":  { "type": "string" },
+        "price":        { "type": "number" },
+        "currency":     { "type": "string", "example": "USD" },
+        "images":       { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "UpdateAdRequest": {
+      "type": "object",
+      "properties": {
+        "category_id":  { "type": "integer" },
+        "title":        { "type": "string" },
+        "description":  { "type": "string" },
+        "price":        { "type": "number" },
+        "currency":     { "type": "string" },
+        "status":       { "type": "string", "enum": ["active","inactive","sold","expired"] },
+        "images":       { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "ListAdsResponse": {
+      "type": "object",
+      "properties": {
+        "ads":   { "type": "array", "items": { "$ref": "#/definitions/AdResponse" } },
+        "total": { "type": "integer" }
+      }
+    },
+    "CategoryResponse": {
+      "type": "object",
+      "properties": {
+        "id":   { "type": "integer" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" }
+      }
+    },
+    "CreateCategoryRequest": {
+      "type": "object", "required": ["name"],
+      "properties": { "name": { "type": "string" } }
+    },
+    "ListCategoriesResponse": {
+      "type": "object",
+      "properties": {
+        "categories": { "type": "array", "items": { "$ref": "#/definitions/CategoryResponse" } }
+      }
+    }
+  }
+}

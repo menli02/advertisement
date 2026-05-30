@@ -1,0 +1,16 @@
+Name: ad.rpc
+ListenOn: 0.0.0.0:9002
+Mode: dev
+
+Etcd:
+  Hosts:
+    - 127.0.0.1:2379
+  Key: ad.rpc
+
+Postgres:
+  DSN: postgres://postgres:<DB_PASSWORD>@127.0.0.1:5432/advertisement?sslmode=disable
+
+Redis:
+  Addr: 127.0.0.1:6379
+  Password: ""
+  DB: 1

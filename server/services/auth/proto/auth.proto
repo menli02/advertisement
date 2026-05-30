@@ -1,0 +1,24 @@
+syntax = "proto3";
+package auth;
+option go_package = "github.com/menli02/advertisement/server/services/auth/rpc/authpb";
+
+service OTPManager {
+    rpc SendOTP   (SendOTPRequest)   returns (SendOTPResponse);
+    rpc VerifyOTP (VerifyOTPRequest) returns (VerifyOTPResponse);
+}
+service Auth {
+    rpc SignIn      (SignInRequest)      returns (SignInResponse);
+    rpc RenewToken  (RenewTokenRequest) returns (RenewTokenResponse);
+}
+
+message SendOTPRequest  { string phone = 1; }
+message SendOTPResponse { string otp_id = 1; int32 exp_sec = 2; }
+
+message VerifyOTPRequest  { string otp_id = 1; int32 code = 2; string phone = 3; }
+message VerifyOTPResponse { string temp_token = 1; }
+
+message SignInRequest  { string temp_token = 1; string first_name = 2; string last_name = 3; }
+message SignInResponse { string access_token = 1; string refresh_token = 2; int64 user_id = 3; }
+
+message RenewTokenRequest  { string refresh_token = 1; }
+message RenewTokenResponse { string access_token = 1; string refresh_token = 2; }

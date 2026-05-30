@@ -1,0 +1,19 @@
+Name: gateway
+Host: 0.0.0.0
+Port: 8080
+Mode: dev
+
+AuthRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: auth.rpc
+
+AdRpc:
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: ad.rpc
+
+App:
+  JWTSecret: <JWT_SECRET>

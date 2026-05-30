@@ -1,0 +1,93 @@
+syntax = "proto3";
+package ad;
+option go_package = "github.com/menli02/advertisement/server/services/ad/rpc/adpb";
+
+service AdService {
+    rpc CreateAd       (CreateAdRequest)       returns (AdResponse);
+    rpc GetAd          (GetAdRequest)          returns (AdResponse);
+    rpc ListAds        (ListAdsRequest)        returns (ListAdsResponse);
+    rpc UpdateAd       (UpdateAdRequest)       returns (AdResponse);
+    rpc DeleteAd       (DeleteAdRequest)       returns (DeleteAdResponse);
+    rpc IncrementView  (IncrementViewRequest)  returns (IncrementViewResponse);
+    rpc CreateCategory (CreateCategoryRequest) returns (CategoryResponse);
+    rpc ListCategories (ListCategoriesRequest) returns (ListCategoriesResponse);
+}
+
+message AdResponse {
+    int64  id           = 1;
+    int64  user_id      = 2;
+    int64  category_id  = 3;
+    string title        = 4;
+    string description  = 5;
+    string slug         = 6;
+    double price        = 7;
+    string currency     = 8;
+    string status       = 9;
+    int64  view_count   = 10;
+    repeated string images = 11;
+    string created_at   = 12;
+    string updated_at   = 13;
+}
+
+message CreateAdRequest {
+    int64  user_id     = 1;
+    int64  category_id = 2;
+    string title       = 3;
+    string description = 4;
+    double price       = 5;
+    string currency    = 6;
+    repeated string images = 7;
+}
+
+message GetAdRequest {
+    int64  id   = 1;
+    string slug = 2;
+}
+
+message ListAdsRequest {
+    int64  category_id = 1;
+    int64  user_id     = 2;
+    string query       = 3;
+    string sort_by     = 4;
+    string sort_order  = 5;
+    int32  page        = 6;
+    int32  page_size   = 7;
+}
+
+message ListAdsResponse {
+    repeated AdResponse ads   = 1;
+    int64               total = 2;
+}
+
+message UpdateAdRequest {
+    int64  id          = 1;
+    int64  user_id     = 2;
+    int64  category_id = 3;
+    string title       = 4;
+    string description = 5;
+    double price       = 6;
+    string currency    = 7;
+    string status      = 8;
+    repeated string images = 9;
+}
+
+message DeleteAdRequest {
+    int64 id      = 1;
+    int64 user_id = 2;
+}
+
+message DeleteAdResponse { bool success = 1; }
+
+message IncrementViewRequest  { int64 id = 1; }
+message IncrementViewResponse { int64 view_count = 1; }
+
+message CategoryResponse {
+    int64  id   = 1;
+    string name = 2;
+    string slug = 3;
+}
+
+message CreateCategoryRequest { string name = 1; }
+
+message ListCategoriesRequest {}
+message ListCategoriesResponse { repeated CategoryResponse categories = 1; }
